@@ -31,6 +31,8 @@ DATABASES = ["eucalyptus_cloudwatch_backend", "eucalyptus_reporting_backend"]
 DEFAULT_PID_ROOT = "/var/run/eucalyptus-database-server"
 DEFAULT_PIDFILE = os.path.join(DEFAULT_PID_ROOT, "eucadb.pid")
 pidfile = DEFAULT_PIDFILE
+SERVER_CERT_ARN = None
+MASTER_PASSWORD_ENCRYPTED = None
 def set_pidfile(filename):
     global pidfile
     global pidroot
