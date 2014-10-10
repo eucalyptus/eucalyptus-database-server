@@ -37,7 +37,13 @@ log_util.init_log(config.LOG_ROOT, 'eucadb')
 log = log_util.log
 set_loglevel = log_util.set_loglevel
 
+def run_as_sudo(cmd):
+    return subprocess.call('sudo %s' % cmd, shell=True)
+
 def setup_config():
+    if run_as_sudo('modprobe floppy > /dev/null') != 0:
+        raise('failed to load floppy driver')
+
     contents = userdata.query_user_data()
     lines = contents.split('\n')
     if len(lines) < 4:
