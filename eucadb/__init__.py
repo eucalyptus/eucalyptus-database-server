@@ -31,6 +31,8 @@ import eucalib.ssl as ssl
 import eucalib.userdata as userdata
 import eucalib.libconfig
 import subprocess
+import os
+
 __version__ = '1.0.0.-dev'
 Version = __version__
 log_util.init_log(config.LOG_ROOT, 'eucadb')

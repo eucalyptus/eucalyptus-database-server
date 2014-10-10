@@ -67,6 +67,11 @@ class EucaDatabasePostgresql(EucaDatabase):
         if not self.start_server():
             eucadb.log.error('Start-server failed')
             return False
+        
+        try:
+            time.sleep(10)
+        except Exception, err:
+            pass
 
         if not self.create_db(config.DATABASES):
             eucadb.log.error('Creating DBs failed')
