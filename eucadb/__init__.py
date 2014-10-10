@@ -32,6 +32,7 @@ import eucalib.userdata as userdata
 import eucalib.libconfig
 import subprocess
 import os
+import time
 
 __version__ = '1.0.0.-dev'
 Version = __version__
