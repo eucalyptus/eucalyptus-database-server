@@ -40,6 +40,15 @@ set_loglevel = log_util.set_loglevel
 def run_as_sudo(cmd):
     return subprocess.call('sudo %s' % cmd, shell=True)
 
+def spin_locks():
+    try:
+        while not (os.path.exists("/var/lib/eucalyptus-database-server/ntp.lock")) :
+            time.sleep(2)
+            log.debug('waiting on ntp setup (reboot if continued)')
+        os.remove("/var/lib/eucalyptus-database-server/ntp.lock")
+    except Exception, err:
+        log.error('failed to spin on locks: %s' % err)
+
 def setup_config():
     if run_as_sudo('modprobe floppy > /dev/null') != 0:
         raise('failed to load floppy driver')
@@ -85,6 +94,7 @@ def write_master_password(password):
  
 def start_database():
     try:
+        spin_locks()
         setup_config()
     except Exception, err:
         log.error('[critical] failed to setup service parameters: %s' % str(err))

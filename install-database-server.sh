@@ -37,4 +37,6 @@ chown eucalyptus:eucalyptus -R /etc/eucalyptus-database-server
 chmod 700 /etc/eucalyptus-database-server
 
 # NTP cronjob
-
+install -p -m 755 -D scripts/server-ntp-update /usr/libexec/eucalyptus-database-server/ntp-update
+install -p -m 0750 -D scripts/database-server.cron /etc/cron.d/eucalyptus-database-server
+chmod 0640 /etc/cron.d/eucalyptus-database-server
