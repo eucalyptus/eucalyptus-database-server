@@ -49,6 +49,7 @@ def spin_locks():
             time.sleep(2)
             log.debug('waiting on ntp setup (reboot if continued)')
         os.remove("/var/lib/eucalyptus-database-server/ntp.lock")
+        log.debug('done ntp sync') 
     except Exception, err:
         log.error('failed to spin on locks: %s' % err)
 
@@ -94,8 +95,8 @@ def write_master_password(password):
     with open(pwd_file, "w+") as fp:
         fp.writelines([password])
         fp.close()
- 
-def start_database():
+db=None 
+def run_database():
     try:
         spin_locks()
         setup_config()
@@ -126,8 +127,30 @@ def start_database():
         log.error('[critical] failed to write the master password: %s' % str(err))
         return
 
+    db=get_database()
     try:
-        get_database().start()
+        db.start()
     except Exception, err:
         log.error('[critical] failed to start the postgresql database: %s' % str(err))
         return
+
+    idx=1
+    while True:
+        try:
+            time.sleep(1)
+            if idx % 10 == 0:
+                log.info(db.status())
+                idx=0
+            i+=1
+        except Exception, err:
+            pass
+    log.info('database server has stopped')
+
+def stop_database():
+    db=get_database()
+    try:
+        if not db.stop():
+            log.error('failed to stop the database')
+    except Exception, err:
+        log.error('failed to stop the database: %s' % str(err))
+    return

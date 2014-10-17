@@ -35,7 +35,7 @@ PROCESS=/usr/bin/eucalyptus-database-server
 PIDFILE=/var/run/eucalyptus-database-server/eucadb.pid
 BOTO_CONFIG=/etc/eucalyptus-database-server/boto.cfg
 EUCADBUSER=eucalyptus
-LOGLEVEL=info
+LOGLEVEL=debug
 
 LOCKFILE=/var/lock/subsys/eucalyptus-database-server
 
@@ -50,6 +50,7 @@ start() {
 
 stop() {
     echo -n $"Stopping $SERVICE: "
+    
     killproc -p $PIDFILE $PROCESS
     RETVAL=$?
     echo

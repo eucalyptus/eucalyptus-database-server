@@ -29,6 +29,9 @@ class EucaDatabase (object):
  
     def start(self):
         raise NotImplementedError
+
+    def stop(self):
+        raise NotImplementedError
  
     def check_version(self):
         raise NotImplementedError
@@ -59,3 +62,9 @@ class EucaDatabase (object):
             else:
                 eucadb.log.debug('STDOUT: %s\nSTDERR: %s' % (out , err))
                 raise Exception("return code: %d\nSTDOUT: %s\nSTDERR: %s" % (p.returncode, out, err))
+
+    def status(self):
+        raise NotImplementedError
+
+    def is_running(self):
+        raise NotImplementedError

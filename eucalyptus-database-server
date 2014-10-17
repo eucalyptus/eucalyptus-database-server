@@ -110,12 +110,12 @@ if __name__ == "__main__":
         usage()
 
     if daemon:
-        daemonize(eucadb.start_database())
+        daemonize(eucadb.run_database)
     else:
         try:
             eucadb.log.info("Starting Eucalyptus Database")
             eucadb.set_loglevel('DEBUG')
-            eucadb.start_database()
+            eucadb.run_database()
         except KeyboardInterrupt:
             eucadb.log.info("Interrupted By User")
             sys.exit(0)

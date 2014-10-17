@@ -221,6 +221,33 @@ class EucaDatabasePostgresql(EucaDatabase):
                 return False
         return True
 
+
+    def status(self):
+        if self.is_running():
+            pid='-1'
+            try:
+                with open(pg_pid, "r") as fp:
+                    contents = fp.readlines()
+                    fp.close()
+                pid = contents[0]
+                pid = pid.strip('\n')
+            except Exception,err:
+                pass
+            return 'Postgresql is running (pid=%s)' % pid
+        else:
+            return '[Failed] Postgresql is not running'
+
+    def stop(self):
+        if self.is_running() and os.path.exists(pg_pid):
+            eucadb.log.info('Shutting down the database')
+            try:
+                self.run_cmd([pg_ctl, pg_stop, pg_mode, pg_db_opt])
+            except Exception, err:
+                eucadb.log.error('Failed to shutdown the database: %s' % str(err))
+                return False 
+        return True
+  
+
     def db_exists(self, db_name):
         try:
             self.run_cmd([pg_psql,"-h%s" % pg_db_dir, "-p%s" % config.DB_PORT, db_name, "-c Select User"]) 
