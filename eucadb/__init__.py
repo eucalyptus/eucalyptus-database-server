@@ -23,6 +23,7 @@
 import M2Crypto
 
 import eucadb.config
+import eucadb.volume as volume
 from eucadb.euca_db_factory import get_database
 from eucalib.boto_config import set_boto_config
 from eucadb.config import set_pidfile
@@ -30,6 +31,7 @@ import eucalib.log_util as log_util
 import eucalib.ssl as ssl
 import eucalib.userdata as userdata
 import eucalib.libconfig
+import eucalib.util as util
 import subprocess
 import os
 import time
@@ -40,8 +42,6 @@ log_util.init_log(config.LOG_ROOT, 'eucadb')
 log = log_util.log
 set_loglevel = log_util.set_loglevel
 
-def run_as_sudo(cmd):
-    return subprocess.call('sudo %s' % cmd, shell=True)
 
 def spin_locks():
     try:
@@ -54,7 +54,7 @@ def spin_locks():
         log.error('failed to spin on locks: %s' % err)
 
 def setup_config():
-    if run_as_sudo('modprobe floppy > /dev/null') != 0:
+    if util.sudo('modprobe floppy > /dev/null') != 0:
         raise('failed to load floppy driver')
 
     contents = userdata.query_user_data()
@@ -73,9 +73,11 @@ def setup_config():
             eucalib.libconfig.COMPUTE_SERVICE_URL= kv[1]
         elif kv[0] == 'euare_service_url':
             eucalib.libconfig.EUARE_SERVICE_URL=kv[1]
+        elif kv[0] == 'volume_id':
+            eucadb.config.VOLUME_ID = kv[1]
     eucalib.libconfig.RUN_DIRECTORY=eucadb.config.RUN_ROOT
-
     # tmp fix 
+
 def download_server_cert():
     return ssl.download_server_certificate(eucadb.config.SERVER_CERT_ARN)
 
@@ -96,12 +98,78 @@ def write_master_password(password):
         fp.writelines([password])
         fp.close()
 db=None 
+
+def prepare_volume():
+    if not eucadb.config.VOLUME_ID:
+        raise Exception('No volume ID is found for storing DB files')
+
+    instance_id = None
+    try:
+        instance_id = userdata.query_meta_data('instance-id')
+    except Exception, err:
+        raise Exception('Could not detect the instance ID')
+
+    if not instance_id:
+        raise Exception('Could not detect the instance ID')
+    volume_id = eucadb.config.VOLUME_ID
+    device_name = eucadb.config.DEVICE_TO_ATTACH
+    
+    log.info('Attaching %s to %s at %s' % (volume_id, instance_id, device_name))
+
+    retry = 20
+    attached = False
+    while retry > 0:
+        try:
+            device_name = volume.attach_volume(volume_id, device_name, instance_id)
+            attached = True
+            break
+        except Exception, err:
+            time.sleep(5)
+        retry -= 1
+    if not attached:
+        raise Exception('Failed to attach the volume')
+    log.info('Volume is attached')        
+
+    partition = None
+    try:
+        partition = volume.partition(device_name)
+    except Exception, err:
+        raise Exception('Failed to prepare file system: %s' % str(err))
+    if not partition:
+        raise Exception('Failed to prepare file system: %s' % str(err))
+
+    log.info('File system is ready at %s' % partition)
+
+    if not os.path.exists(config.PG_RUN_DIR):
+        os.mkdir(config.PG_RUN_DIR)
+
+    if not os.path.exists(config.PG_DATA_DIR):
+        os.mkdir(config.PG_DATA_DIR)
+
+    try:
+        mounted = volume.mount(partition, config.PG_RUN_DIR)
+        if mounted != config.PG_RUN_DIR:
+            raise Exception()
+    except Exception, err:
+        raise Exception('Failed to mount the DB data directory: %s' % str(err))
+
+    log.info('Data files are mounted at %s' % mounted) 
+
+    if util.sudo('/bin/chown eucalyptus:eucalyptus %s' % mounted)  != 0:
+        raise Exception('Failed to chown the mounted directory')
+    
 def run_database():
     try:
         spin_locks()
         setup_config()
     except Exception, err:
         log.error('[critical] failed to setup service parameters: %s' % str(err))
+        return
+
+    try:
+        prepare_volume()
+    except Exception, err:
+        log.error('[critical] failed to prepare the volume containing db files: %s' % str(err)) 
         return
 
     # download server certificate

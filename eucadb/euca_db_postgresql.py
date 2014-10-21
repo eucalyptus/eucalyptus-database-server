@@ -27,7 +27,7 @@ import time
 from eucadb.euca_db import EucaDatabase
 
 pg_dir=config.PGSQL_DIR
-pg_run_dir=os.path.join(config.RUN_ROOT, "pgsql")
+pg_run_dir=config.PG_RUN_DIR
 pg_bin_dir=os.path.join(pg_dir,"bin")
 pg_initdb=os.path.join(pg_bin_dir,"initdb")
 pg_psql=os.path.join(pg_bin_dir,"psql")
@@ -37,7 +37,7 @@ pg_locale="--locale=C"
 pg_user_opt="-U eucalyptus"
 pg_trust_opt = "--auth=password"
 pg_pwd_file = "--pwfile="+config.DB_PASSWORD_FILE
-pg_db_dir = os.path.join(pg_run_dir, "data")
+pg_db_dir = config.PG_DATA_DIR
 pg_db_opt = "-D"+pg_db_dir
 pg_x_dir = os.path.join(pg_run_dir, "tx")
 pg_x_opt = "-X"+pg_x_dir
@@ -100,7 +100,8 @@ class EucaDatabasePostgresql(EucaDatabase):
        
     def init_db(self):
         # check if the data directory is empty; if not return True
-        if os.path.exists(pg_db_dir) and len(os.listdir(pg_db_dir))>0:
+        conf_file = os.path.join(pg_db_dir, 'postgresql.conf')
+        if os.path.exists(conf_file):
             eucadb.log.info('Existing database is found; skipping initdb')
         else:
             if not os.path.exists(pg_run_dir):

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+dev=$1
+if [ -z $dev ]; then
+    echo "dev must be specified (e.g, /dev/vdc)"
+    exit 1
+fi
+
+if ! ls $dev > /dev/null 2>&1; then
+    echo "no device $dev is found"
+    exit 1 
+fi
+part="$dev"1
+if ls $part > /dev/null 2>&1; then
+    echo "$part"
+    exit 0
+fi
+if ! sudo sfdisk -l $dev | grep Linux > /dev/null 2>&1; then
+sudo sfdisk $dev << EOF
+;
+EOF
+fi
+
+if ls $part > /dev/null 2>&1; then
+    echo "$part"
+    exit 0
+else
+    echo "no partition is created"
+    exit 1
+fi
+exit 0

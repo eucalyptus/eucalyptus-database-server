@@ -21,10 +21,14 @@
 # else happens. We need to initialize the logger that boto will be using.
 #
 import os
+PGSQL_DIR = "/usr/pgsql-9.1/"
 LOG_ROOT = "/var/log/eucalyptus-database-server"
 RUN_ROOT = "/var/lib/eucalyptus-database-server"
+SCRIPT_ROOT = "/usr/libexec/eucalyptus-database-server"
+PARTITION_SCRIPT = os.path.join(SCRIPT_ROOT, "vol-partition")
+PG_RUN_DIR = os.path.join(RUN_ROOT, "pgsql")
+PG_DATA_DIR = os.path.join(PG_RUN_DIR, "data")
 DB_PASSWORD_FILE = os.path.join(RUN_ROOT, "db_pass.in")
-PGSQL_DIR = "/usr/pgsql-9.1/"
 DB_PORT = "5432"
 DATABASES = ["eucalyptus_cloudwatch_backend", "eucalyptus_reporting_backend"]
 
@@ -33,6 +37,8 @@ DEFAULT_PIDFILE = os.path.join(DEFAULT_PID_ROOT, "eucadb.pid")
 pidfile = DEFAULT_PIDFILE
 SERVER_CERT_ARN = None
 MASTER_PASSWORD_ENCRYPTED = None
+VOLUME_ID = None
+DEVICE_TO_ATTACH = '/dev/vdc'
 def set_pidfile(filename):
     global pidfile
     global pidroot
