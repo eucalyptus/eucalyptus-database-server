@@ -54,8 +54,19 @@ def spin_locks():
         log.error('failed to spin on locks: %s' % err)
 
 def setup_config():
+    pgsql_v = ['9.3', '9.2', '9.1', '9.0']
+    pgsql_installed = False
+    for v in pgsql_v:
+        path = '/usr/pgsql-%s' % v
+        if os.path.exists(path):
+            config.PGSQL_DIR = path
+            pgsql_installed = True
+    if not pgsql_installed:
+        raise Exception('postgresql is not found under /usr/pgsql-{version}')
+    log.info('PostgreSQL is found at %s' % config.PGSQL_DIR)
+ 
     if util.sudo('modprobe floppy > /dev/null') != 0:
-        raise('failed to load floppy driver')
+        raise Exception('failed to load floppy driver')
 
     contents = userdata.query_user_data()
     lines = contents.split('\n')
