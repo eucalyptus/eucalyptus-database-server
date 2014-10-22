@@ -139,6 +139,18 @@ class EucaDatabasePostgresql(EucaDatabase):
             eucadb.log.error('Failed to update postgresql.conf: %s' % str(err))
             return False
 
+        # get the cert/key ready for ssl
+        cert_file=os.path.join(config.PG_DATA_DIR, "server.crt")
+        with open(cert_file, "w+") as fp:
+            fp.writelines([config.SERVER_CERT_CRT])
+            fp.close()
+
+        key_file=os.path.join(config.PG_DATA_DIR, "server.key")
+        with open(key_file, "w+") as fp:
+            fp.writelines([config.SERVER_CERT_KEY])
+            fp.close()
+        os.chmod(key_file, 0400)
+
         return True
     
     def start_server(self): 
@@ -298,6 +310,10 @@ class EucaDatabasePostgresql(EucaDatabase):
                 line = 'listen_addresses = \'*\'\n'
             elif line.startswith('#unix_socket_directory') or line.startswith('unix_socket_directory'):
                 line = 'unix_socket_directory = \'%s\'\n' % pg_db_dir
+            elif line.startswith('#ssl =') or line.startswith('ssl ='):
+                line = 'ssl = on\n'
+            elif line.startswith('#ssl_ciphers =') or line.startswith('ssl_ciphers ='):
+                line = 'ssl_ciphers = \'AES128-SHA:AES256-SHA\'\n'
             new_contents.append(line)
         backup = conf_file + ".orig" 
         os.rename(conf_file, backup)

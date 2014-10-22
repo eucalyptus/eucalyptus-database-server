@@ -176,10 +176,11 @@ def run_database():
     cert = None
     try:
         cert = download_server_cert()
+        config.SERVER_CERT_CRT = cert.get_certificate()
+        config.SERVER_CERT_KEY = cert.get_private_key()
     except Exception, err:
         log.error('[critical] failed to download server certificate: %s' % str(err))
         return        
-
     # decrypt the master password
     password = None
     try:
