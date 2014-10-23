@@ -210,7 +210,7 @@ def run_database():
             if idx % 10 == 0:
                 log.info(db.status())
                 idx=0
-            i+=1
+            idx+=1
         except Exception, err:
             pass
     log.info('database server has stopped')

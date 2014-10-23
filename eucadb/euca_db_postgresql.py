@@ -149,7 +149,7 @@ class EucaDatabasePostgresql(EucaDatabase):
         with open(key_file, "w+") as fp:
             fp.writelines([config.SERVER_CERT_KEY])
             fp.close()
-        os.chmod(key_file, 0400)
+        os.chmod(key_file, 0600)
 
         return True
     
