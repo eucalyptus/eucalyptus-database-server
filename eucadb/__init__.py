@@ -127,7 +127,7 @@ def prepare_volume():
     
     log.info('Attaching %s to %s at %s' % (volume_id, instance_id, device_name))
 
-    retry = 20
+    retry = 60
     attached = False
     while retry > 0:
         try:
@@ -136,7 +136,9 @@ def prepare_volume():
             break
         except Exception, err:
             time.sleep(5)
+        time.sleep(1)
         retry -= 1
+        log.info('Retrying volume attachment')
     if not attached:
         raise Exception('Failed to attach the volume')
     log.info('Volume is attached')        
