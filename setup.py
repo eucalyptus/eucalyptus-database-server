@@ -39,7 +39,7 @@ setup (name="euca-database-server",
     author_email = "community@eucalyptus.com",
     license = "GPL v3",
     url = "http://www.eucalytpus.com",
-    packages = ['eucadb'],
+    packages = ['eucadb','eucalib'],
     scripts = ['eucalyptus-database-server'],
     data_files = [('/etc/eucalyptus-database-server', ['scripts/boto.cfg'])],
 )
