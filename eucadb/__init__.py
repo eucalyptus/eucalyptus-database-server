@@ -53,6 +53,7 @@ def spin_locks():
     except Exception, err:
         log.error('failed to spin on locks: %s' % err)
 
+
 def setup_config():
     pgsql_v = ['9.3', '9.2', '9.1', '9.0']
     pgsql_installed = False
@@ -68,32 +69,19 @@ def setup_config():
     if util.sudo('modprobe floppy > /dev/null') != 0:
         raise Exception('failed to load floppy driver')
 
-    contents = userdata.query_user_data()
-    lines = contents.split('\n')
-    if len(lines) < 4:
-        raise Exception('malformed user data')
-    eucadb.config.SERVER_CERT_ARN=lines[1].strip('\n') 
-    eucadb.config.MASTER_PASSWORD_ENCRYPTED=lines[2].strip('\n')
+    eucadb.config.SERVER_CERT_ARN = config.get_server_cert_arn()
+    eucadb.config.MASTER_PASSWORD_ENCRYPTED = config.get_master_password_encrypted()
+    eucalib.libconfig.COMPUTE_SERVICE_URL = config.get_compute_service_url()
+    eucalib.libconfig.EUARE_SERVICE_URL = config.get_euare_service_url()
+    eucadb.config.VOLUME_ID = config.get_volume_id()
+    eucalib.libconfig.RUN_DIRECTORY = eucadb.config.RUN_ROOT
 
-    kvlist = lines[3].split(';')
-    for word in kvlist:
-        kv = word.split('=')
-        if len(kv) != 2:
-            continue
-        if kv[0] == 'compute_service_url':
-            eucalib.libconfig.COMPUTE_SERVICE_URL= kv[1]
-        elif kv[0] == 'euare_service_url':
-            eucalib.libconfig.EUARE_SERVICE_URL=kv[1]
-        elif kv[0] == 'volume_id':
-            eucadb.config.VOLUME_ID = kv[1]
-    eucalib.libconfig.RUN_DIRECTORY=eucadb.config.RUN_ROOT
-    # tmp fix 
 
 def download_server_cert():
     return ssl.download_server_certificate(eucadb.config.SERVER_CERT_ARN)
 
+
 def decrypt_master_password(server_cert):
-    cert = server_cert.get_certificate()
     pk = server_cert.get_private_key()
     rsa = M2Crypto.RSA.load_key_string(pk)
     passwd = None
@@ -102,6 +90,7 @@ def decrypt_master_password(server_cert):
     except Exception, err:
         raise Exception('failed to decrypt: %s' % str(err))
     return passwd
+
 
 def write_master_password(password):
     pwd_file = eucadb.config.DB_PASSWORD_FILE
