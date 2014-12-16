@@ -88,6 +88,10 @@ def get_euare_service_url():
     return get_value('euare_service_url')
 
 
+def get_ntp_server_url():
+    return get_value('ntp_server')
+
+
 def get_volume_id():
     return get_value('volume_id')
 
