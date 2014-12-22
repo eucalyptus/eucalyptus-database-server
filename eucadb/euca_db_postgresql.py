@@ -89,7 +89,7 @@ class EucaDatabasePostgresql(EucaDatabase):
 
         return True
     def check_version(self):
-        expected = "9.1"
+        expected = "9.2"
         version = self.run_cmd([pg_initdb, "--version"])
         tokens = version.split()
         version = tokens[len(tokens)-1]

@@ -21,7 +21,7 @@
 # else happens. We need to initialize the logger that boto will be using.
 #
 import os
-PGSQL_DIR = "/usr/pgsql-9.1/"
+PGSQL_DIR = "/usr/pgsql-9.2/"
 LOG_ROOT = "/var/log/eucalyptus-database-server"
 RUN_ROOT = "/var/lib/eucalyptus-database-server"
 SCRIPT_ROOT = "/usr/libexec/eucalyptus-database-server"
@@ -59,7 +59,7 @@ def read_config_file():
         lines = content.split('\n')
         for l in lines:
             if len(l.strip()):
-                kv = l.split('=')
+                kv = l.split('=', 1)
                 if len(kv) == 2:
                     user_data_store[kv[0]] = kv[1]
     except Exception, err:
